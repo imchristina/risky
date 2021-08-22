@@ -15,8 +15,8 @@ module risky_ctrl (
   wire [2:0] f3;
 
   // Alias assignments
-  assign op = inst & `RISKY_INST_MASK_OP;
-  assign rd = inst & `RISKY_INST_MASK_RD;
+  assign op = inst[`RISKY_INST_OP];
+  assign rd = inst[`RISKY_INST_RD];
 
   wire step_reset;
 
