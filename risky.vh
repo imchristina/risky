@@ -1,12 +1,12 @@
 // Instruction bit selectors/masks
-`define RISKY_INST_OP       [6:0]
-`define RISKY_INST_RD       [11:7]
-`define RISKY_INST_F3       [14:12]
-`define RISKY_INST_RS1      [19:15]
-`define RISKY_INST_RS2      [24:20]
-`define RISKY_INST_F7       [31:25]
-`define RISKY_INST_IMM_I    [31:20]
-`define RISKY_INST_IMM_U    [31:12]
+`define RISKY_INST_OP       6:0
+`define RISKY_INST_RD       11:7
+`define RISKY_INST_F3       14:12
+`define RISKY_INST_RS1      19:15
+`define RISKY_INST_RS2      24:20
+`define RISKY_INST_F7       31:25
+`define RISKY_INST_IMM_I    31:20
+`define RISKY_INST_IMM_U    31:12
 `define RISKY_INST_IMM_S_H  `RISKY_INST_MASK_F7
 `define RISKY_INST_IMM_S_L  `RISKY_INST_MASK_RD
 

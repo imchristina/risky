@@ -1,40 +1,66 @@
-// Microcoded all the way down
-// If it's easier to make a resource shared, do it even if it means terrible performance
-
 module risky (
   input clk,
   inout [31:0] data,
   output [31:0] addr,
   output write_enable
 );
-  // The main bus that everything connects to
-  wire [31:0] bus;
 
-  wire [1:0] pc_ctrl;
-  risky_pc pc (
+  wire [31:0] fetch_data, fetch_address;
+  risky_fetch fetch (
     .clk(clk),
-    .ctrl(pc_ctrl),
-    .bus(bus)
+    .mem_data(fetch_data),
+    .mem_address(fetch_address)
   );
 
-  wire [1:0] regfile_ctrl;
+  wire [31:0] writeback_reg_data;
+  wire [4:0] writeback_reg_sel;
+  risky_writeback writeback (
+    .clk(clk),
+    .reg_data(writeback_reg_data),
+    .reg_sel(writeback_reg_sel)
+  );
+
   risky_regfile regfile (
     .clk(clk),
-    .ctrl(regfile_ctrl),
-    .bus(bus)
+    .out_a(),
+    .out_a_sel(),
+    .out_b(),
+    .out_b_sel(),
+    .in(writeback_reg_data),
+    .in_sel(writeback_reg_sel)
   );
 
-  wire [2:0] alu_ctrl;
-  risky_alu alu (
+  // FIXME this is temporary until memory conflicts can be handled with a single port ram
+  risky_dualportmem tempmem (
     .clk(clk),
-    .ctrl(alu_ctrl),
-    .bus(bus)
+    .a_write(1'b0),
+    .b_write(),
+    .a_address(fetch_address),
+    .b_address(),
+    .a_data(fetch_data),
+    .b_data()
   );
 
-  risky_ctrl ctrl (
-    .clk(clk),
-    .bus(bus),
-    .pc(pc_ctrl),
-    .alu(alu_ctrl)
-  );
+  // TODO global wire for stalls and hazards
+  wire stall;
+  // TODO/FIXME if a branch instruction enters the pipeline just stall lol
+endmodule
+
+// Create our own dual port memory for now to avoid implimenting pipeline stalling
+module risky_dualportmem (
+  input clk, a_write, b_write,
+  input [31:0] a_address, b_address,
+  inout reg [31:0] a_data, b_data
+);
+  reg [31:0] mem [1024:0];
+  always @(posedge clk) begin
+    if (a_write)
+      mem[a_address] <= a_data;
+    else
+      a_data = mem[a_address];
+    if (b_write)
+      mem[b_address] <= b_data;
+    else
+      b_data = mem[b_address];
+  end
 endmodule
