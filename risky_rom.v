@@ -4,31 +4,36 @@ module risky_testbench();
     reg clk = 0;
     always #1 clk = ~clk;
 
-    reg [31:0] mem [4000000:0];
+    reg [31:0] ram [4000000:0];
     reg [31:0] rom [1000000:0];
+    reg [31:0] mmio [15:0];
     wire [31:0] mem_data, mem_addr, mem_addr_ram;
     wire mem_oe, mem_we, mem_rom, mem_ram;
 
-    assign mem_rom = mem_addr[31:26] == 0;
-    assign mem_ram = mem_addr[31:26] == 1;
+    assign mem_rom = mem_addr[31:26] == 6'd0;
+    assign mem_ram = mem_addr[31:26] == 6'd1;
+    assign mem_mmio = mem_addr[31:26] == 6'd2;
     assign mem_addr_ram = {3'd0, mem_addr[25:0]};
 
-    assign mem_data = (mem_oe & mem_ram) ? mem[mem_addr_ram] : {32{1'bz}};
+    assign mem_data = (mem_oe & mem_ram) ? ram[mem_addr_ram] : {32{1'bz}};
     assign mem_data = (mem_oe & mem_rom) ? rom[mem_addr] : {32{1'bz}};
+    assign mem_data = (mem_oe & mem_mmio) ? mmio[mem_addr_ram] : {32{1'bz}};
 
     always @(posedge clk) begin
         if (mem_we & mem_ram)
-            mem[mem_addr_ram] <= mem_data;
+            ram[mem_addr_ram] <= mem_data;
+        if (mem_we & mem_mmio)
+            mmio[mem_addr_ram] <= mem_data;
     end
 
     always @(posedge clk) begin
-        if (mem[0]) begin
-            $display("Application returned (", mem[1], "), ending simulation");
+        if (mmio[0]) begin
+            $display("Application returned (", mmio[1], "), ending simulation");
             $finish;
         end
-        if (mem[3]) begin
-            $write("%s", mem[2][7:0]);
-            mem[3] <= 0;
+        if (mmio[3]) begin
+            $write("%s", mmio[2][7:0]);
+            mmio[3] <= 0;
         end
     end
 
