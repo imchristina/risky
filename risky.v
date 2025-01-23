@@ -308,12 +308,12 @@ module risky_alu (input clk, inout [31:0] bus1, bus2, input alu_rinst, alu_rdata
             case ({alu_itype ? 7'd0 : funct7, funct3})
                 {`RISKY_INST_F7_ADD,`RISKY_INST_F3_ACC}: result = rs1 + rs2; // ADD
                 {`RISKY_INST_F7_SUB,`RISKY_INST_F3_ACC}: result = rs1 - rs2; // SUB
-                {7'd0,`RISKY_INST_F3_SLL}: result = rs1 << rs2; // SLL
+                {7'd0,`RISKY_INST_F3_SLL}: result = rs1 << rs2[4:0]; // SLL
                 {7'd0,`RISKY_INST_F3_SLT}: result = {31'd0, $signed(rs1) < $signed(rs2)}; // SLT
                 {7'd0,`RISKY_INST_F3_SLTU}: result = {31'd0, rs1 < rs2}; // SLTU
                 {7'd0,`RISKY_INST_F3_XOR}: result = rs1 ^ rs2; // XOR
-                {`RISKY_INST_F7_SRL,`RISKY_INST_F3_SR}: result = rs1 >> rs2; // SRL
-                {`RISKY_INST_F7_SRA,`RISKY_INST_F3_SR}: result = rs1 >>> rs2; // SRA
+                {`RISKY_INST_F7_SRL,`RISKY_INST_F3_SR}: result = rs1 >> rs2[4:0]; // SRL
+                {`RISKY_INST_F7_SRA,`RISKY_INST_F3_SR}: result = rs1 >>> rs2[4:0]; // SRA
                 {7'd0,`RISKY_INST_F3_OR}: result = rs1 | rs2; // OR
                 {7'd0,`RISKY_INST_F3_AND}: result = rs1 & rs2; // AND
                 default: result = 32'd0; // TODO error handling
