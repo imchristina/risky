@@ -26,14 +26,24 @@ module risky_testbench();
             mmio[mem_addr_ram] <= mem_data;
     end
 
+    // MMIO handler
     always @(posedge clk) begin
+        // Application finished execution
         if (mmio[0]) begin
             $display("Application returned (", mmio[1], "), ending simulation");
             $finish;
         end
+
+        // STDOUT
         if (mmio[3]) begin
             $write("%s", mmio[2][7:0]);
             mmio[3] <= 0;
+        end
+
+        // STDIN
+        if (mmio[5]) begin
+            mmio[4] = $fgetc('h8000_0000);
+            mmio[5] <= 0;
         end
     end
 
