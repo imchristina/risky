@@ -55,7 +55,7 @@ module risky_testbench();
         $dumpfile("out.vcd");
         $dumpvars(0,risky_testbench);
 
-        file = $fopen("out.bin", "rb");
+        file = $fopen("../toolchain/out.bin", "rb");
         if (file == 0) begin
             $display("Failed to open out.bin");
             $finish;
