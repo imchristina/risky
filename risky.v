@@ -6,6 +6,9 @@
 // TODO make control signals consistent, all should be in context of the module. (probably)
 // Example, raddr would output an address onto the bus, waddr would write one to the module from the bus.
 
+// Core configuration
+`define RISKY_CONF_EXT_M
+
 // Instruction bit selectors/masks
 `define RISKY_INST_OP       6:0
 `define RISKY_INST_RD       11:7
@@ -67,11 +70,22 @@
 `define RISKY_INST_F3_OR      3'b110
 `define RISKY_INST_F3_AND     3'b111
 
+// Function 3 ALU M
+`define RISKY_INST_F3_MUL     3'b000
+`define RISKY_INST_F3_MULH    3'b001
+`define RISKY_INST_F3_MULHSU  3'b010
+`define RISKY_INST_F3_MULHU   3'b011
+`define RISKY_INST_F3_DIV     3'b100
+`define RISKY_INST_F3_DIVU    3'b101
+`define RISKY_INST_F3_REM     3'b110
+`define RISKY_INST_F3_REMU    3'b111
+
 // Function 7
 `define RISKY_INST_F7_ADD 7'b0000000
 `define RISKY_INST_F7_SUB 7'b0100000
 `define RISKY_INST_F7_SRL 7'b0000000
 `define RISKY_INST_F7_SRA 7'b0100000
+`define RISKY_INST_F7_M   7'b0000001
 
 module risky (input clk, inout [31:0] mem_data, output [31:0] mem_addr, output mem_oe, output mem_we);
     wire [31:0] bus1;
@@ -306,28 +320,39 @@ module risky_alu (input clk, inout [31:0] bus1, bus2, input alu_rinst, alu_rdata
     always @(*) begin
         if (!alu_mtype & !alu_btype) begin
             case ({alu_itype ? 7'd0 : funct7, funct3})
-                {`RISKY_INST_F7_ADD,`RISKY_INST_F3_ACC}: result = rs1 + rs2; // ADD
-                {`RISKY_INST_F7_SUB,`RISKY_INST_F3_ACC}: result = rs1 - rs2; // SUB
-                {7'd0,`RISKY_INST_F3_SLL}: result = rs1 << rs2[4:0]; // SLL
-                {7'd0,`RISKY_INST_F3_SLT}: result = {31'd0, $signed(rs1) < $signed(rs2)}; // SLT
-                {7'd0,`RISKY_INST_F3_SLTU}: result = {31'd0, rs1 < rs2}; // SLTU
-                {7'd0,`RISKY_INST_F3_XOR}: result = rs1 ^ rs2; // XOR
-                {`RISKY_INST_F7_SRL,`RISKY_INST_F3_SR}: result = rs1 >> rs2[4:0]; // SRL
-                {`RISKY_INST_F7_SRA,`RISKY_INST_F3_SR}: result = rs1 >>> rs2[4:0]; // SRA
-                {7'd0,`RISKY_INST_F3_OR}: result = rs1 | rs2; // OR
-                {7'd0,`RISKY_INST_F3_AND}: result = rs1 & rs2; // AND
+                {`RISKY_INST_F7_ADD,`RISKY_INST_F3_ACC}:    result = rs1 + rs2;                             // ADD
+                {`RISKY_INST_F7_SUB,`RISKY_INST_F3_ACC}:    result = rs1 - rs2;                             // SUB
+                {7'd0,`RISKY_INST_F3_SLL}:                  result = rs1 << rs2[4:0];                       // SLL
+                {7'd0,`RISKY_INST_F3_SLT}:                  result = {31'd0, $signed(rs1) < $signed(rs2)};  // SLT
+                {7'd0,`RISKY_INST_F3_SLTU}:                 result = {31'd0, rs1 < rs2};                    // SLTU
+                {7'd0,`RISKY_INST_F3_XOR}:                  result = rs1 ^ rs2;                             // XOR
+                {`RISKY_INST_F7_SRL,`RISKY_INST_F3_SR}:     result = rs1 >> rs2[4:0];                       // SRL
+                {`RISKY_INST_F7_SRA,`RISKY_INST_F3_SR}:     result = $signed(rs1) >>> rs2[4:0];             // SRA
+                {7'd0,`RISKY_INST_F3_OR}:                   result = rs1 | rs2;                             // OR
+                {7'd0,`RISKY_INST_F3_AND}:                  result = rs1 & rs2;                             // AND
+
+                `ifdef RISKY_CONF_EXT_M // M extension
+                {`RISKY_INST_F7_M,`RISKY_INST_F3_MUL}:      result = $signed(rs1) * $signed(rs2);           // MUL
+                {`RISKY_INST_F7_M,`RISKY_INST_F3_MULH}:     result = ($signed(rs1) * $signed(rs2)) >> 32;   // MULH
+                {`RISKY_INST_F7_M,`RISKY_INST_F3_MULHSU}:   result = ($signed(rs1) * rs2) >> 32;            // MULHSU
+                {`RISKY_INST_F7_M,`RISKY_INST_F3_MULHU}:    result = (rs1 * rs2) >> 32;                     // MULHU
+                {`RISKY_INST_F7_M,`RISKY_INST_F3_DIV}:      result = $signed(rs1) / $signed(rs2);           // DIV
+                {`RISKY_INST_F7_M,`RISKY_INST_F3_DIVU}:     result = rs1 / rs2;                             // DIVU
+                {`RISKY_INST_F7_M,`RISKY_INST_F3_REM}:      result = $signed(rs1) % $signed(rs2);           // REM
+                {`RISKY_INST_F7_M,`RISKY_INST_F3_REMU}:     result = rs1 % rs2;                             // REMU
+                `endif
                 default: result = 32'd0; // TODO error handling
             endcase
         end else if (alu_mtype)
             result = rs1 + rs2;
         else if (alu_btype) begin
             case (funct3)
-                `RISKY_INST_F3_BEQ: result = {31'd0,rs1 == rs2};
-                `RISKY_INST_F3_BNE: result = {31'd0,rs1 != rs2};
-                `RISKY_INST_F3_BLT: result = {31'd0,$signed(rs1) < $signed(rs2)};
-                `RISKY_INST_F3_BGE: result = {31'd0,$signed(rs1) >= $signed(rs2)};
-                `RISKY_INST_F3_BLTU: result = {31'd0,rs1 < rs2};
-                `RISKY_INST_F3_BGEU: result = {31'd0,rs1 >= rs2};
+                `RISKY_INST_F3_BEQ:     result = {31'd0,rs1 == rs2};
+                `RISKY_INST_F3_BNE:     result = {31'd0,rs1 != rs2};
+                `RISKY_INST_F3_BLT:     result = {31'd0,$signed(rs1) < $signed(rs2)};
+                `RISKY_INST_F3_BGE:     result = {31'd0,$signed(rs1) >= $signed(rs2)};
+                `RISKY_INST_F3_BLTU:    result = {31'd0,rs1 < rs2};
+                `RISKY_INST_F3_BGEU:    result = {31'd0,rs1 >= rs2};
                 default: result = 32'd0;
             endcase
         end
