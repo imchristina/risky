@@ -65,3 +65,20 @@ char get_char() {
     while (*ACK_ADDR_IN == 1) {}
     return *DATA_ADDR_IN;
 }
+
+void get_line(char *buffer, int max_len) {
+    char ptr = 0;
+    while (ptr < max_len-2) {
+        buffer[ptr] = get_char();
+        if (buffer[ptr] == '\n') {
+            buffer[ptr + 1] = 0;
+            break;
+        } else {
+            ptr++;
+        }
+    }
+
+    if (ptr <= max_len-2) {
+        buffer[max_len-1] = 0; // Ensure null termination
+    }
+}
