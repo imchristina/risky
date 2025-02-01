@@ -316,10 +316,17 @@ module risky_alu (input clk, inout [31:0] bus1, bus2, input alu_rinst, alu_rdata
         end
     end
 
+    // RISC-V is beautiful, until you realise there are a bunch of little exceptions that make no sense
+    // This brings me great pain
+    wire itype_shift = (funct3 == `RISKY_INST_F3_SR || funct3 == `RISKY_INST_F3_SLL);
+
+    wire [63:0] rs1_i64 = $signed(rs1);
+    wire [63:0] rs2_i64 = $signed(rs2);
+
     // Combinational logic
     always @(*) begin
         if (!alu_mtype & !alu_btype) begin
-            case ({alu_itype ? 7'd0 : funct7, funct3})
+            case ({(alu_itype && !itype_shift) ? 7'd0 : funct7, funct3})
                 {`RISKY_INST_F7_ADD,`RISKY_INST_F3_ACC}:    result = rs1 + rs2;                             // ADD
                 {`RISKY_INST_F7_SUB,`RISKY_INST_F3_ACC}:    result = rs1 - rs2;                             // SUB
                 {7'd0,`RISKY_INST_F3_SLL}:                  result = rs1 << rs2[4:0];                       // SLL
@@ -332,14 +339,14 @@ module risky_alu (input clk, inout [31:0] bus1, bus2, input alu_rinst, alu_rdata
                 {7'd0,`RISKY_INST_F3_AND}:                  result = rs1 & rs2;                             // AND
 
                 `ifdef RISKY_CONF_EXT_M // M extension
-                {`RISKY_INST_F7_M,`RISKY_INST_F3_MUL}:      result = $signed(rs1) * $signed(rs2);           // MUL
-                {`RISKY_INST_F7_M,`RISKY_INST_F3_MULH}:     result = ($signed(rs1) * $signed(rs2)) >> 32;   // MULH
-                {`RISKY_INST_F7_M,`RISKY_INST_F3_MULHSU}:   result = ($signed(rs1) * rs2) >> 32;            // MULHSU
-                {`RISKY_INST_F7_M,`RISKY_INST_F3_MULHU}:    result = (rs1 * rs2) >> 32;                     // MULHU
-                {`RISKY_INST_F7_M,`RISKY_INST_F3_DIV}:      result = $signed(rs1) / $signed(rs2);           // DIV
-                {`RISKY_INST_F7_M,`RISKY_INST_F3_DIVU}:     result = rs1 / rs2;                             // DIVU
-                {`RISKY_INST_F7_M,`RISKY_INST_F3_REM}:      result = $signed(rs1) % $signed(rs2);           // REM
-                {`RISKY_INST_F7_M,`RISKY_INST_F3_REMU}:     result = rs1 % rs2;                             // REMU
+                {`RISKY_INST_F7_M,`RISKY_INST_F3_MUL}:      result = $signed(rs1) * $signed(rs2);                   // MUL
+                {`RISKY_INST_F7_M,`RISKY_INST_F3_MULH}:     result = ($signed(rs1_i64) * $signed(rs2_i64)) >> 32;   // MULH
+                {`RISKY_INST_F7_M,`RISKY_INST_F3_MULHSU}:   result = ($signed(rs1_i64) * {32'd0, rs2}) >> 32;       // MULHSU
+                {`RISKY_INST_F7_M,`RISKY_INST_F3_MULHU}:    result = ({32'd0, rs1} * {32'd0, rs2}) >> 32;           // MULHU
+                {`RISKY_INST_F7_M,`RISKY_INST_F3_DIV}:      result = $signed(rs1) / $signed(rs2);                   // DIV
+                {`RISKY_INST_F7_M,`RISKY_INST_F3_DIVU}:     result = rs1 / rs2;                                     // DIVU
+                {`RISKY_INST_F7_M,`RISKY_INST_F3_REM}:      result = $signed(rs1) % $signed(rs2);                   // REM
+                {`RISKY_INST_F7_M,`RISKY_INST_F3_REMU}:     result = rs1 % rs2;                                     // REMU
                 `endif
                 default: result = 32'd0; // TODO error handling
             endcase
