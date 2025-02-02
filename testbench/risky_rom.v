@@ -37,6 +37,7 @@ module risky_testbench();
         // STDOUT
         if (mmio[3]) begin
             $write("%s", mmio[2][7:0]);
+            $fflush();
             mmio[3] <= 0;
         end
 
@@ -71,9 +72,9 @@ module risky_testbench();
 
         $display("Risky execution started");
 
-        #100000
+        //#100000
 
-        $display("Application did not return within simulation period");
-        $finish;
+        //$display("Application did not return within simulation period");
+        //$finish;
     end
 endmodule
