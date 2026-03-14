@@ -1,9 +1,9 @@
 rm a.out out.vcd
 
 if [[ $1 == "--testbench" ]]; then
-    iverilog ../core/risky.v risky_testbench.v
+    iverilog ../core/*.vh ../core/*.v risky_testbench.v
 elif [[ $1 == "--rom" ]]; then
-    iverilog ../core/risky.v risky_rom.v
+    iverilog ../core/*.vh ../core/*.v risky_rom.v
 fi
 
 vvp a.out
