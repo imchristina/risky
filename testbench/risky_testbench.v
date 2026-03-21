@@ -5,17 +5,30 @@ module risky_testbench();
     always #1 clk = ~clk;
 
     reg [31:0] mem [1023:0];
-    wire [31:0] mem_data, mem_addr;
-    wire mem_oe, mem_we;
+    wire [31:0] mem_rdata, mem_wdata, mem_addr;
+    wire [3:0] mem_byte_en;
+    wire mem_rd_en, mem_wr_en;
 
-    assign mem_data = mem_oe ? mem[mem_addr] : {32{1'bz}};
+    assign mem_rdata = mem_rd_en ? mem[mem_addr] : {32{1'bz}};
 
     always @(*) begin
-        if (mem_we)
-            mem[mem_addr] <= mem_data;
+        if (mem_wr_en) begin
+            if (mem_byte_en[0]) mem[mem_addr][7:0]   = mem_wdata[7:0];
+            if (mem_byte_en[1]) mem[mem_addr][15:8]  = mem_wdata[15:8];
+            if (mem_byte_en[2]) mem[mem_addr][23:16] = mem_wdata[23:16];
+            if (mem_byte_en[3]) mem[mem_addr][31:24] = mem_wdata[31:24];
+        end
     end
 
-    risky rsky (clk, mem_data, mem_addr, mem_oe, mem_we);
+    risky rsky (
+        .clk(clk),
+        .addr(mem_addr),
+        .rdata(mem_rdata),
+        .rd_en(mem_rd_en),
+        .wdata(mem_wdata),
+        .byte_en(mem_byte_en),
+        .wr_en(mem_wr_en)
+    );
 
     initial begin
         $dumpfile("out.vcd");
