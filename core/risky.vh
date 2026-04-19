@@ -1,6 +1,31 @@
 // Core configuration
 `define RISKY_CONF_EXT_M
 
+//
+// Decode-emitted internal control words
+//
+
+// Execute stage control word
+`define RISKY_EXECUTE_CTRL_LEN  1
+`define RISKY_EXECUTE_CTRL_NOP  1'd0
+`define RISKY_EXECUTE_CTRL_OP   1'd1
+
+// Mem stage control word
+`define RISKY_MEM_CTRL_LEN      2
+`define RISKY_MEM_CTRL_NOP      2'd0
+`define RISKY_MEM_CTRL_READ     2'd1
+`define RISKY_MEM_CTRL_WRITE    2'd2
+
+// Writeback stage control word
+`define RISKY_WRITEBACK_CTRL_LEN    2
+`define RISKY_WRITEBACK_CTRL_NOP    2'd0
+`define RISKY_WRITEBACK_CTRL_REG    2'd1
+`define RISKY_WRITEBACK_CTRL_PC     2'd2
+
+//
+// RISC-V decode constants
+//
+
 // Instruction bit selectors/masks
 `define RISKY_INST_OP       6:0
 `define RISKY_INST_RD       11:7
