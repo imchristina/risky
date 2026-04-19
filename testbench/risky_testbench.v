@@ -9,14 +9,14 @@ module risky_testbench();
     wire [3:0] mem_byte_en;
     wire mem_rd_en, mem_wr_en;
 
-    assign mem_rdata = mem_rd_en ? mem[mem_addr] : {32{1'bz}};
+    assign mem_rdata = mem_rd_en ? mem[mem_addr[31:2]] : {32{1'bz}};
 
     always @(*) begin
         if (mem_wr_en) begin
-            if (mem_byte_en[0]) mem[mem_addr][7:0]   = mem_wdata[7:0];
-            if (mem_byte_en[1]) mem[mem_addr][15:8]  = mem_wdata[15:8];
-            if (mem_byte_en[2]) mem[mem_addr][23:16] = mem_wdata[23:16];
-            if (mem_byte_en[3]) mem[mem_addr][31:24] = mem_wdata[31:24];
+            if (mem_byte_en[0]) mem[mem_addr[31:2]][7:0]   = mem_wdata[7:0];
+            if (mem_byte_en[1]) mem[mem_addr[31:2]][15:8]  = mem_wdata[15:8];
+            if (mem_byte_en[2]) mem[mem_addr[31:2]][23:16] = mem_wdata[23:16];
+            if (mem_byte_en[3]) mem[mem_addr[31:2]][31:24] = mem_wdata[31:24];
         end
     end
 
