@@ -1,30 +1,20 @@
 // Core configuration
 `define RISKY_CONF_EXT_M
 
-//
-// Decode-emitted internal control words
-//
+// Internal ALU instruction set
+`define RISKY_ALU_ADD   5'd0
+`define RISKY_ALU_SUB   5'd1
+`define RISKY_ALU_XOR   5'd3
+`define RISKY_ALU_OR    5'd4
+`define RISKY_ALU_AND   5'd5
+`define RISKY_ALU_SLL   5'd6
+`define RISKY_ALU_SRL   5'd7
+`define RISKY_ALU_SRA   5'd8
+`define RISKY_ALU_SLT   5'd9
+`define RISKY_ALU_SLTU  5'd10
 
-// Execute stage control word
-`define RISKY_EXECUTE_CTRL_LEN  1
-`define RISKY_EXECUTE_CTRL_NOP  1'd0
-`define RISKY_EXECUTE_CTRL_OP   1'd1
-
-// Mem stage control word
-`define RISKY_MEM_CTRL_LEN      2
-`define RISKY_MEM_CTRL_NOP      2'd0
-`define RISKY_MEM_CTRL_READ     2'd1
-`define RISKY_MEM_CTRL_WRITE    2'd2
-
-// Writeback stage control word
-`define RISKY_WRITEBACK_CTRL_LEN    2
-`define RISKY_WRITEBACK_CTRL_NOP    2'd0
-`define RISKY_WRITEBACK_CTRL_REG    2'd1
-`define RISKY_WRITEBACK_CTRL_PC     2'd2
-
-//
-// RISC-V decode constants
-//
+// Decode data switches
+`define RISKY_DECODE
 
 // Instruction bit selectors/masks
 `define RISKY_INST_OP       6:0
@@ -33,17 +23,6 @@
 `define RISKY_INST_RS1      19:15
 `define RISKY_INST_RS2      24:20
 `define RISKY_INST_F7       31:25
-`define RISKY_INST_IMM_I    31:20
-`define RISKY_INST_IMM_S_H  31:25
-`define RISKY_INST_IMM_S_L  11:7
-`define RISKY_INST_IMM_B_LL 11:8
-`define RISKY_INST_IMM_B_LH 30:25
-`define RISKY_INST_IMM_B_HL 7
-`define RISKY_INST_IMM_B_HH 31
-`define RISKY_INST_IMM_U    31:12
-`define RISKY_INST_IMM_J_L  30:21
-`define RISKY_INST_IMM_J_M  20
-`define RISKY_INST_IMM_J_H  19:12
 
 // Instruction types
 `define RISKY_INST_TYPE_R 7'b0110011
@@ -54,13 +33,14 @@
 `define RISKY_INST_TYPE_J 7'b1101111
 
 // Opcodes
-`define RISKY_INST_OP_LUI   7'b0110111
-`define RISKY_INST_OP_AUIPC 7'b0010111
+`define RISKY_INST_OP_REG   7'b0110011 // Integer register
+`define RISKY_INST_OP_IMM   7'b0010011 // Integer immediate
+`define RISKY_INST_OP_LOAD  7'b0000011 // Mem load
+`define RISKY_INST_OP_STORE 7'b0100011 // Mem store
 `define RISKY_INST_OP_JAL   7'b1101111
 `define RISKY_INST_OP_JALR  7'b1100111
-`define RISKY_INST_OP_ML    7'b0000011 // Mem load
-`define RISKY_INST_OP_MS    7'b0100011 // Mem store
-`define RISKY_INST_OP_AI    7'b0010011 // ALU Immediate
+`define RISKY_INST_OP_LUI   7'b0110111
+`define RISKY_INST_OP_AUIPC 7'b0010111
 
 // Function 3 Branch
 `define RISKY_INST_F3_BEQ     3'b000
