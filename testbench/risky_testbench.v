@@ -36,19 +36,19 @@ module risky_testbench();
 
         $display("Risky testbench started");
 
-        mem[0] = {12'd16,5'd0,`RISKY_INST_F3_WORD,5'd1,`RISKY_INST_OP_ML}; // LW
-        mem[1] = {12'd1,5'd1,`RISKY_INST_F3_ACC,5'd2,`RISKY_INST_OP_AI}; // ADDI
-        mem[2] = {6'd0,5'd2,5'd0,`RISKY_INST_F3_WORD,5'd4*5'd4,`RISKY_INST_OP_MS}; // SW
+        mem[0] = {12'd16,5'd0,`RISKY_INST_F3_WORD,5'd1,`RISKY_INST_OP_LOAD}; // LW
+        mem[1] = {12'd1,5'd1,`RISKY_INST_F3_ACC,5'd2,`RISKY_INST_OP_IMM}; // ADDI
+        mem[2] = {6'd0,5'd2,5'd0,`RISKY_INST_F3_WORD,5'd4*5'd4,`RISKY_INST_OP_STORE}; // SW
         mem[4] = 32'd42069; // DATA
 
         mem[3] = {12'd6*12'd4,5'd0,3'd0,5'd3,`RISKY_INST_OP_JALR}; // JALR
-        mem[6] = {6'd0,5'd3,5'd0,`RISKY_INST_F3_WORD,5'd5*5'd4,`RISKY_INST_OP_MS}; // SW
+        mem[6] = {6'd0,5'd3,5'd0,`RISKY_INST_F3_WORD,5'd5*5'd4,`RISKY_INST_OP_STORE}; // SW
 
-        mem[7] = {12'd10*12'd4,5'd0,`RISKY_INST_F3_WORD,5'd1,`RISKY_INST_OP_ML}; // LW
+        mem[7] = {12'd10*12'd4,5'd0,`RISKY_INST_F3_WORD,5'd1,`RISKY_INST_OP_LOAD}; // LW
         mem[8] = {7'd0,5'd0,5'd1,`RISKY_INST_F3_BEQ,5'd8,`RISKY_INST_TYPE_B}; // BEQ NOT TAKEN
         mem[9] = {7'd0,5'd1,5'd1,`RISKY_INST_F3_BEQ,5'd8,`RISKY_INST_TYPE_B};// BEQ TAKEN
         mem[10] = 32'd42069; // DATA
-        mem[11] = {6'd0,5'd1,5'd0,`RISKY_INST_F3_WORD,5'd6*5'd4,`RISKY_INST_OP_MS}; // SW
+        mem[11] = {6'd0,5'd1,5'd0,`RISKY_INST_F3_WORD,5'd6*5'd4,`RISKY_INST_OP_STORE}; // SW
 
         #1000;
         if (mem[4] == 32'd42070)
